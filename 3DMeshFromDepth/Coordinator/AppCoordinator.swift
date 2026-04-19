@@ -42,7 +42,12 @@ class AppCoordinator {
     
     func export(in vc: MainViewController, with url: URL) {
         let activityVC = UIActivityViewController(activityItems: [url as Any], applicationActivities: .none)
-        vc.dismiss(animated: true)
+        activityVC.completionWithItemsHandler = { _, _, _, _ in
+            let configuration = ARWorldTrackingConfiguration()
+            configuration.frameSemantics = [.sceneDepth, .smoothedSceneDepth]
+            vc.session.run(configuration)
+            vc.mtkView.isPaused = false
+        }
         activityVC.modalPresentationStyle = .formSheet
         activityVC.preferredContentSize = CGSize(width: vc.view.frame.width, height: vc.view.frame.height)
         vc.present(activityVC, animated: true)

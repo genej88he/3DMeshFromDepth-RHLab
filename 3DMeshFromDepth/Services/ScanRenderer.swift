@@ -252,7 +252,7 @@ class ScanRenderer {
 
 extension ScanRenderer {
     
-    func saveToPly(_ completion: @escaping (Bool) -> ()) {
+    func saveToPly(_ completion: @escaping (URL?) -> ()) {
         guard !self.isSavingFile else { return }
         
         guard !self.pointsCpuBuffer.isEmpty else { return }
@@ -261,9 +261,9 @@ extension ScanRenderer {
             self.isSavingFile = true
             
             do {
-                try PlyMesh.writeToFile(pointsCpuBuffer: &self.pointsCpuBuffer,
+                let url = try PlyMesh.writeToFile(pointsCpuBuffer: &self.pointsCpuBuffer,
                                         highConfidenceCount: self.highConfidencePointsCount)
-                completion(true)
+                completion(url)
             } catch { }
             
             self.isSavingFile = false

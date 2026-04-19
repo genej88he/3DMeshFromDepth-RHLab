@@ -9,7 +9,7 @@ import Foundation
 
 class PlyMesh {
     
-    static func writeToFile(pointsCpuBuffer: inout [PointCPU], highConfidenceCount: Int) throws {
+    static func writeToFile(pointsCpuBuffer: inout [PointCPU], highConfidenceCount: Int) throws -> URL {
         let fileName = "scan"
         
         let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
@@ -41,6 +41,7 @@ class PlyMesh {
         try headersString.write(to: plyFile, atomically: true, encoding: .ascii)
         
         try writeBinary(file: plyFile, format: format, pointsCPUBuffer: &pointsCpuBuffer)
+        return plyFile
     }
     
     private static func writeBinary(file: URL, format: String, pointsCPUBuffer: inout [PointCPU]) throws -> Void {

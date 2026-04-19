@@ -8,14 +8,15 @@
 import UIKit
 import ARKit
 import MetalKit
+import AVFoundation
 
 class MainViewController: UIViewController {
     
     // MARK: - Properties
     
-    private let session = ARSession()
+    let session = ARSession()
     var scanRenderer: ScanRenderer!
-    private let mtkView = MTKView()
+    let mtkView = MTKView()
     private let spinner = UIActivityIndicatorView(style: .large)
     private var saveButton = UIButton(type: .system)
     var coordinator: AppCoordinator?
@@ -24,12 +25,25 @@ class MainViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        if ARWorldTrackingConfiguration.supportsFrameSemantics(.sceneDepth) {
-            self.session.delegate = self
-            self.setupMtkView()
-            self.setupSaveButton()
-            self.setupSpinner()
+        print("Supports sceneDepth:", ARWorldTrackingConfiguration.supportsFrameSemantics(.sceneDepth))
+        AVCaptureDevice.requestAccess(for: .video) { granted in
+            DispatchQueue.main.async {
+                if granted {
+                    if (ARWorldTrackingConfiguration.supportsFrameSemantics(.sceneDepth)) {
+                        self.session.delegate = self
+                        self.setupMtkView()
+                        self.setupSaveButton()
+                        self.setupSpinner()
+                    }
+                }
+            }
         }
+//        if ARWorldTrackingConfiguration.supportsFrameSemantics(.sceneDepth) {
+//            self.session.delegate = self
+//            self.setupMtkView()
+//            self.setupSaveButton()
+//            self.setupSpinner()
+//        }
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -101,14 +115,25 @@ class MainViewController: UIViewController {
         print("!! Scan points count:", self.scanRenderer.highConfidencePointsCount)
         
         self.spinner.startAnimating()
-        
-        self.scanRenderer.saveToPly() { _ in
+        self.session.pause()
+        self.mtkView.isPaused = true
+        self.scanRenderer.saveToPly() { url in
             DispatchQueue.main.async {
-                self.dismiss(animated: true, completion: nil)
+//                self.dismiss(animated: true, completion: nil)
                 self.spinner.stopAnimating()
-                self.coordinator?.presentDoneAlert(in: self)
+                
+                if let url = url {
+                    self.coordinator?.export(in: self, with: url)
+                }
+                
+//                self.mtkView.isPaused = false
+//                let configuration = ARWorldTrackingConfiguration()
+//                configuration.frameSemantics = [.sceneDepth, .smoothedSceneDepth]
+//                self.session.run(configuration)
+                
             }
         }
+        
     }
 }
 
