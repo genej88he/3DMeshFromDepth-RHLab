@@ -222,7 +222,7 @@ class ScanRenderer {
                 let position = self.pointsBuffer[i].position
                 let color = self.pointsBuffer[i].color
                 let confidence = self.pointsBuffer[i].confidence
-                if confidence == 2 { self.highConfidencePointsCount += 1 }
+                if confidence >= 2.0 { self.highConfidencePointsCount += 1 }
                 self.pointsCpuBuffer.append(
                     PointCPU(position: position,
                              color: color,
@@ -253,9 +253,17 @@ class ScanRenderer {
 extension ScanRenderer {
     
     func saveToPly(_ completion: @escaping (URL?) -> ()) {
-        guard !self.isSavingFile else { return }
+        guard !self.isSavingFile else{
+            completion(nil)
+            return
+        }
+            
         
-        guard !self.pointsCpuBuffer.isEmpty else { return }
+        guard !self.pointsCpuBuffer.isEmpty else {
+            completion(nil)
+            return
+        }
+        
         
         DispatchQueue.global().async {
             self.isSavingFile = true

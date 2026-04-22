@@ -115,15 +115,18 @@ class MainViewController: UIViewController {
         print("!! Scan points count:", self.scanRenderer.highConfidencePointsCount)
         
         self.spinner.startAnimating()
-        self.session.pause()
-        self.mtkView.isPaused = true
         self.scanRenderer.saveToPly() { url in
             DispatchQueue.main.async {
 //                self.dismiss(animated: true, completion: nil)
                 self.spinner.stopAnimating()
                 
                 if let url = url {
+                    self.session.pause()
+                    self.mtkView.isPaused = true
                     self.coordinator?.export(in: self, with: url)
+                    
+                } else {
+                    print("Saved fail or no points captured")
                 }
                 
 //                self.mtkView.isPaused = false
